@@ -1,33 +1,17 @@
-#
-# Ubuntu Dockerfile
-#
-# https://github.com/dockerfile/ubuntu
-#
+# Use a base image that supports systemd, for example, Ubuntu
+FROM ubuntu:20.04
 
-# Pull base image.
-FROM ubuntu:22.10
+# Install necessary packages
+RUN apt-get update && \
+apt-get install -y shellinabox && \
+apt-get install -y systemd && \
+apt-get clean && \
+apt-get install default-jdk && \
+rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Install.
-RUN \
-  sed -i 's/# \(.*multiverse$\)/\1/g' /etc/apt/sources.list && \
-  apt update && \
-  apt -y upgrade && \
-  apt install -y build-essential && \
-  apt install -y software-properties-common && \
-  apt install -y byobu curl git htop man unzip vim wget && \
-  rm -rf /var/lib/apt/lists/*
-  apt install default-jdk
+RUN echo 'root:root' | chpasswd
+# Expose the web-based terminal port
+EXPOSE 4200
 
-# Add files.
-ADD root/.bashrc /root/.bashrc
-ADD root/.gitconfig /root/.gitconfig
-ADD root/.scripts /root/.scripts
-
-# Set environment variables.
-ENV HOME /root
-
-# Define working directory.
-WORKDIR /root
-
-# Define default command.
-CMD ["bash"]
+# Start shellinabox
+CMD ["/usr/bin/shellinaboxd", "-t", "-s", "/:LOGIN"]
